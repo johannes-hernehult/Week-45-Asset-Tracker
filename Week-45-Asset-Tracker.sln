@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Week-45-Asset-Tracker", "Week-45-Asset-Tracker\Week-45-Asset-Tracker.csproj", "{79AE19CB-D062-4BC9-AC74-C675C1B2AECA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79AE19CB-D062-4BC9-AC74-C675C1B2AECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79AE19CB-D062-4BC9-AC74-C675C1B2AECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79AE19CB-D062-4BC9-AC74-C675C1B2AECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79AE19CB-D062-4BC9-AC74-C675C1B2AECA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
