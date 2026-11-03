@@ -1,54 +1,83 @@
 # Asset Tracker: Plan
 
-## Plan
+## Goal
 
-- Simple UML diagram of classes
-- Data structures
-- List requirements
+Console app to track company assets across offices: add, remove, search, sort, and flag assets nearing end of life.
 
 ## Requirements
 
-- Lifespan 3 years
-- Colored feedback on near / past lifespan items
-    - < 3 months remaining = red
-    - \> 3 && < 6 months remaining = yellow
-    - \> 3 years = red and add `!` at the end of `RED` status
-- Assets belong to different offices in different countries
-- Each office uses its own currency
-    - Think through how to do this as all should have USD and local currency in data structure
-- Be able to sort by AssetType, PurchaseDate or Office
-    - `a` & `d` (ascending / descending)
+- Each asset belongs to an office; the office decides the currency
+- User enters the price in the office's local currency; USD is calculated from it
+- Exchange rate = local currency units per 1 USD (hardcoded)
 
-## Data Structure
+### Asset (abstract)
 
-### Asset
+Holds asset data, calculates expiry date, status and USD price.
 
-- Id
-- Brand
-- Model
-- Purchase date
-- PriceUSD
-- PriceLocal
+- Id: 5-digit string ("10001" - "99999")
+- Brand, Model
+- PurchaseDate
+- PriceLocal: entered by user, in the office's currency
+- PriceUSD: calculated (`PriceLocal / Office.ExchangeRate`)
 - Office
-- AssetType: abstract string
+- AssetType: `abstract AssetType Type { get; }`
+- ExpiryDate: calculated (`PurchaseDate + 3 years`)
+- Status: calculated, returns `Status` enum
+
+
+### Computer / MobilePhone / Tablet : Asset
+
+Each overrides `Type` with its own `AssetType` value.
+
 
 ### Office
 
-- Id
-- Name
-- Country
-- City
-- CurrencyToken
-- ExchangeRate
+Holds country, currency and exchange rate. Predefined instances only.
 
-### Computer : Asset
+- Country, CurrencyToken, ExchangeRate (decimal, local per 1 USD)
+- Offices: Sweden (SEK), USA (USD, rate 1), Turkey (TRY), optionally Germany (EUR)
 
-- AssetType: override `"Computer"`
+### AssetManager
 
-### MobilePhone : Asset
+Owns the asset list: add, remove, search, sort, ID collision check. No console I/O.
 
-- AssetType: override `"Mobile Phone"`
+### UI (static)
 
-### Tablet : Asset
+Renders text, tables, menus and input prompts. Maps `Status` to color. No business rules.
 
-- AssetType: override `"Tablet"`
+### Validate (static)
+
+Validates user input (price, date, menu selection, asset).
+
+### Utility (static)
+
+Small helpers only (input normalizing, `TryParse`-style readers). Keep it small.
+
+## Enums
+
+- SortBy: AssetType, Office, PurchaseDate
+- AssetType: Computer, MobilePhone, Tablet
+- Status: None, Yellow, Red, Expired
+
+```csharp
+using System.Text.RegularExpressions;
+
+// Splits PascalCase text into separate words,
+// e.g. "MobilePhone" -> "Mobile Phone", "PurchaseDate" -> "Purchase Date".
+// Inserts a space between each lowercase and uppercase letter pair.
+public static string SplitWords(string text) =>
+Regex.Replace(text, "(?<=[a-z])(?=[A-Z])", " ");
+```
+
+## Build Order
+
+- [ ] L1: Asset, Computer, MobilePhone, hardcoded list, print table
+- [ ] L2: Status logic, sorting by type then date
+- [ ] L3: Office + currency, sorting by office then date
+- [ ] L4: Abstract Asset, Tablet, IDs, menu (add / view / sort / search / remove)
+- [ ] L5 (optional): JSON save/load, export
+
+## Notes for README
+
+- Color rules are my own choice (allowed by the instructor): closer to expiry = more severe.
+- Exchange rates are hardcoded.
