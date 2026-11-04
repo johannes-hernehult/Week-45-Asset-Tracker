@@ -1,3 +1,5 @@
+using Week_45_Asset_Tracker.Models;
+
 namespace Week_45_Asset_Tracker.UI;
 
 public static class AddAsset
@@ -9,7 +11,7 @@ public static class AddAsset
             Console.Clear();
             Console.WriteLine("===== Add Asset =====");
 
-            var assetType = PromptRequired("Asset Type");
+            var assetType = PromptForValidAssetType("Asset Type");
             //Check that asset type matches available types
 
             var brand = PromptRequired("Brand");
@@ -24,10 +26,6 @@ public static class AddAsset
             var purchaseDate = PromptRequired("Purchase Date (yyyy-MM-dd)");
             //Validate to be DateOnly
 
-            // Render error messages if invalid inputs
-            // Success *asset* added: Add new asset? (y/n)
-            //y = continue
-            //n = break
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("SUCCESS: Asset added!");
             Console.ResetColor();
@@ -46,7 +44,9 @@ public static class AddAsset
     {
         while (true)
         {
-            Console.WriteLine($"{label}: ");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write($"{label}: ");
+            Console.ResetColor();
             string? input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
@@ -58,6 +58,30 @@ public static class AddAsset
             }
 
             return NormalizeInputString(input);
+        }
+    }
+
+    private static string PromptForValidAssetType(string label)
+    {
+        while (true)
+        {
+            Console.Write("Available asset types: ");
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine($"{string.Join(", ", AssetTypes.All)}");
+            Console.ResetColor();
+
+            string input = PromptRequired(label);
+            bool isValid = AssetTypes.All.Contains(input, StringComparer.OrdinalIgnoreCase);
+            if (!isValid)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"Asset type {input} not supported, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            ;
+            return input;
         }
     }
 }

@@ -1,5 +1,19 @@
 namespace Week_45_Asset_Tracker.Models;
 
+public static class AssetTypes
+{
+    public const string Computer = "Computer";
+    public const string MobilePhone = "Mobile Phone";
+    public const string Tablet = "Tablet";
+
+    public static readonly string[] All =
+    [
+        Computer,
+        MobilePhone,
+        Tablet
+    ];
+}
+
 public abstract class Asset(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
 {
     public int Id { get; } = Random.Shared.Next(10000, 100000);
@@ -14,17 +28,17 @@ public abstract class Asset(string brand, string model, DateOnly purchaseDate, d
 public class Computer(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
-    public override string AssetType => "Computer";
+    public override string AssetType => AssetTypes.Computer;
 }
 
 public class MobilePhone(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
-    public override string AssetType => "Mobile Phone";
+    public override string AssetType => AssetTypes.MobilePhone;
 }
 
 public class Tablet(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
-    public override string AssetType => "Tablet";
+    public override string AssetType => AssetTypes.Tablet;
 }
