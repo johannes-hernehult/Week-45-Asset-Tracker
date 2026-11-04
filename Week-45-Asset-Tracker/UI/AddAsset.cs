@@ -17,7 +17,7 @@ public static class AddAsset
             var model = PromptRequired("Model");
 
             //Check that office matches available offices
-            var office = PromptRequired("Office");
+            var office = PromptForValidOffice("Office");
 
             var price = PromptRequired("Price");
             //Validate to decimal
@@ -84,19 +84,22 @@ public static class AddAsset
             return input;
         }
     }
-    
+
     private static string PromptForValidOffice(string label)
     {
         while (true)
         {
             Console.Write("Available offices: ");
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine($"{string.Join(", ", Offices.All)}");
+            Console.WriteLine(
+                $"{string.Join(", ", OfficeCatalog.All.Select(office => office.Name))}");
             Console.ResetColor();
 
             string input = PromptRequired(label);
-            bool isValid = Offices.All.Contains(input, StringComparer.OrdinalIgnoreCase);
-            if (!isValid)
+            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
+                string.Equals(office.Name, input, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedOffice is null)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"Office {input} not available, try again.");

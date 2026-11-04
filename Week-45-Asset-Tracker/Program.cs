@@ -1,5 +1,4 @@
-﻿using Week_45_Asset_Tracker.Models;
-using Week_45_Asset_Tracker.UI;
+﻿using Week_45_Asset_Tracker.UI;
 
 Console.WriteLine("======= Asset Tracker =======");
 
