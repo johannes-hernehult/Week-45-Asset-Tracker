@@ -4,32 +4,36 @@ public static class AddAsset
 {
     public static void Run()
     {
-        // Entry loop for asset data
         while (true)
         {
-            // Reset console
             Console.Clear();
-            // Render heading
             Console.WriteLine("===== Add Asset =====");
-            // Prompt user for data
 
-            string? assetType = PromptRequired("Asset Type");
+            var assetType = PromptRequired("Asset Type");
+            //Check that asset type matches available types
 
-            string? brand = PromptRequired("Brand");
+            var brand = PromptRequired("Brand");
+            var model = PromptRequired("Model");
+            var office = PromptRequired("Office");
+            //Check that office matches available offices
 
-            string? model  = PromptRequired("Model");
+            var price = PromptRequired("Price");
+            //Validate to decimal
+            //Convert from local currency to USD
 
-            string? office  = PromptRequired("Office");
-
-            string? price  = PromptRequired("Price");
-
-            string? purchaseDate = PromptRequired("Purchase Date");
+            var purchaseDate = PromptRequired("Purchase Date (yyyy-MM-dd)");
+            //Validate to be DateOnly
 
             // Render error messages if invalid inputs
             // Success *asset* added: Add new asset? (y/n)
             //y = continue
             //n = break
-            Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("SUCCESS: Asset added!");
+            Console.ResetColor();
+
+            var input = PromptRequired("Add a new asset (y/n)? ");
+            if (input == "n") break;
         }
     }
 
