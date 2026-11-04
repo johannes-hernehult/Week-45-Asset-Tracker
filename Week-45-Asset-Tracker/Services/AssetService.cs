@@ -2,12 +2,6 @@ namespace Week_45_Asset_Tracker.Services;
 
 using Week_45_Asset_Tracker.Models;
 
-public enum SortBy
-{
-    AssetType,
-    PurchaseDate,
-}
-
 public class AssetService
 {
     private List<Asset> _assets = [];
