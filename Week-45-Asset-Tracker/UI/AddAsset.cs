@@ -12,12 +12,12 @@ public static class AddAsset
             Console.WriteLine("===== Add Asset =====");
 
             var assetType = PromptForValidAssetType("Asset Type");
-            //Check that asset type matches available types
 
             var brand = PromptRequired("Brand");
             var model = PromptRequired("Model");
-            var office = PromptRequired("Office");
+
             //Check that office matches available offices
+            var office = PromptRequired("Office");
 
             var price = PromptRequired("Price");
             //Validate to decimal
@@ -76,6 +76,30 @@ public static class AddAsset
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"Asset type {input} not supported, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            ;
+            return input;
+        }
+    }
+    
+    private static string PromptForValidOffice(string label)
+    {
+        while (true)
+        {
+            Console.Write("Available offices: ");
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine($"{string.Join(", ", Offices.All)}");
+            Console.ResetColor();
+
+            string input = PromptRequired(label);
+            bool isValid = Offices.All.Contains(input, StringComparer.OrdinalIgnoreCase);
+            if (!isValid)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"Office {input} not available, try again.");
                 Console.ResetColor();
                 continue;
             }
