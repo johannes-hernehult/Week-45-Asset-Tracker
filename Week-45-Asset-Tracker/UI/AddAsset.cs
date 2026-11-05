@@ -1,3 +1,4 @@
+using System.Globalization;
 using Week_45_Asset_Tracker.Models;
 
 namespace Week_45_Asset_Tracker.UI;
@@ -16,10 +17,9 @@ public static class AddAsset
             var model = PromptRequired("Model");
             var office = PromptForValidOffice("Office");
             var priceLocal = PromptForValidDecimal("Price", office);
-            //Convert from local currency to USD
             var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
 
-            var purchaseDate = PromptRequired("Purchase Date (yyyy-MM-dd)");
+            var purchaseDate = PromptForValidDateOnly("Purchase Date (yyyy-MM-dd)");
             //Validate to be DateOnly
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -36,12 +36,12 @@ public static class AddAsset
         return input.Trim().ToLowerInvariant();
     }
 
-    private static string PromptRequired(string label)
+    private static string PromptRequired(string prompt)
     {
         while (true)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write($"{label}: ");
+            Console.Write($"{prompt}: ");
             Console.ResetColor();
             string? input = Console.ReadLine();
 
@@ -57,7 +57,7 @@ public static class AddAsset
         }
     }
 
-    private static string PromptForValidAssetType(string label)
+    private static string PromptForValidAssetType(string prompt)
     {
         while (true)
         {
@@ -66,7 +66,7 @@ public static class AddAsset
             Console.WriteLine($"{string.Join(", ", AssetTypes.All)}");
             Console.ResetColor();
 
-            string input = PromptRequired(label);
+            string input = PromptRequired(prompt);
             bool isValid = AssetTypes.All.Contains(input, StringComparer.OrdinalIgnoreCase);
             if (!isValid)
             {
@@ -80,7 +80,7 @@ public static class AddAsset
         }
     }
 
-    private static string PromptForValidOffice(string label)
+    private static string PromptForValidOffice(string prompt)
     {
         while (true)
         {
@@ -90,7 +90,7 @@ public static class AddAsset
                 $"{string.Join(", ", OfficeCatalog.All.Select(office => office.Name))}");
             Console.ResetColor();
 
-            string input = PromptRequired(label);
+            string input = PromptRequired(prompt);
             var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
                 string.Equals(office.Name, input, StringComparison.OrdinalIgnoreCase));
 
@@ -106,7 +106,7 @@ public static class AddAsset
         }
     }
 
-    private static decimal PromptForValidDecimal(string label, string officeName)
+    private static decimal PromptForValidDecimal(string prompt, string officeName)
     {
         while (true)
         {
@@ -130,7 +130,7 @@ public static class AddAsset
                 continue;
             }
 
-            string input = PromptRequired(@$"{label} ({currencyCode})");
+            string input = PromptRequired(@$"{prompt} ({currencyCode})");
             input = input.Replace(',', '.');
             bool isDecimal = decimal.TryParse(input, out decimal price);
             if (!isDecimal)
@@ -152,7 +152,7 @@ public static class AddAsset
             return price;
         }
     }
-    
+
     private static decimal ConvertCurrencyToUsd(decimal localPrice, string officeName)
     {
         while (true)
@@ -175,6 +175,30 @@ public static class AddAsset
             Console.WriteLine(localPrice);
 
             return priceUsd;
+        }
+    }
+
+    private static DateOnly PromptForValidDateOnly(string prompt)
+    {
+        while (true)
+        {
+            string input = PromptRequired($"{prompt}");
+
+            bool isValidDate = DateOnly.TryParseExact(
+                input.Trim(),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateOnly date);
+
+            if (!isValidDate)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
+                Console.ResetColor();
+            }
+
+            return date;
         }
     }
 }
