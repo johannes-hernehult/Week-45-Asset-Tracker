@@ -1,11 +1,12 @@
 using System.Globalization;
 using Week_45_Asset_Tracker.Models;
+using Week_45_Asset_Tracker.Services;
 
 namespace Week_45_Asset_Tracker.UI;
 
 public static class AddAsset
 {
-    public static void Run()
+    public static void Run(AssetService assetService)
     {
         while (true)
         {
@@ -18,16 +19,30 @@ public static class AddAsset
             var office = PromptForValidOffice("Office");
             var priceLocal = PromptForValidDecimal("Price", office);
             var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
-
             var purchaseDate = PromptForValidDateOnly("Purchase Date (yyyy-MM-dd)");
-            //Validate to be DateOnly
 
+            switch (assetType)
+            {
+                case AssetTypes.Computer:
+                    assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office));
+                    break;
+                case AssetTypes.MobilePhone:
+                    assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office));
+                    break;
+                case AssetTypes.Tablet:
+                    assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office));
+                    break;
+            }
+            
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("SUCCESS: Asset added!");
             Console.ResetColor();
 
-            var input = PromptRequired("Add a new asset (y/n)? ");
-            if (input == "n") break;
+            var input = PromptRequired("Add a new asset (y/n)? ", true);
+            if (input == "n")
+            {
+                break;
+            }
         }
     }
 
@@ -36,7 +51,7 @@ public static class AddAsset
         return input.Trim().ToLowerInvariant();
     }
 
-    private static string PromptRequired(string prompt)
+    private static string PromptRequired(string prompt, bool allowEmpty = false)
     {
         while (true)
         {
@@ -47,6 +62,11 @@ public static class AddAsset
 
             if (string.IsNullOrWhiteSpace(input))
             {
+                if (allowEmpty)
+                {
+                    return string.Empty;
+                }
+
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine("Input can not be empty, try again!");
                 Console.ResetColor();
@@ -67,8 +87,10 @@ public static class AddAsset
             Console.ResetColor();
 
             string input = PromptRequired(prompt);
-            bool isValid = AssetTypes.All.Contains(input, StringComparer.OrdinalIgnoreCase);
-            if (!isValid)
+            string? matchingAssetType = AssetTypes.All.FirstOrDefault(type =>
+                string.Equals(type, input, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingAssetType is null)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"Asset type {input} not supported, try again.");
@@ -76,7 +98,7 @@ public static class AddAsset
                 continue;
             }
 
-            return input;
+            return matchingAssetType;
         }
     }
 
@@ -170,9 +192,6 @@ public static class AddAsset
 
             decimal exchangeRate = selectedOffice.exchangeRate;
             decimal priceUsd = exchangeRate * localPrice;
-
-            Console.WriteLine(priceUsd);
-            Console.WriteLine(localPrice);
 
             return priceUsd;
         }
