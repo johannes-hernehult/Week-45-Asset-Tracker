@@ -15,9 +15,9 @@ public static class AddAsset
             var brand = PromptRequired("Brand");
             var model = PromptRequired("Model");
             var office = PromptForValidOffice("Office");
-            var price = PromptForValidDecimal("Price");
-            //Validate to decimal
+            var priceLocal = PromptForValidDecimal("Price", office);
             //Convert from local currency to USD
+            var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
 
             var purchaseDate = PromptRequired("Purchase Date (yyyy-MM-dd)");
             //Validate to be DateOnly
@@ -106,11 +106,31 @@ public static class AddAsset
         }
     }
 
-    private static string PromptForValidDecimal(string label)
+    private static decimal PromptForValidDecimal(string label, string officeName)
     {
         while (true)
         {
-            string input = PromptRequired(label);
+            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
+                string.Equals(office.Name, officeName, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedOffice is null)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Office not found, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            string? currencyCode = selectedOffice.CurrencyCode;
+            if (string.IsNullOrWhiteSpace(currencyCode))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Currency code is not available, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            string input = PromptRequired(@$"{label} ({currencyCode})");
             input = input.Replace(',', '.');
             bool isDecimal = decimal.TryParse(input, out decimal price);
             if (!isDecimal)
@@ -129,7 +149,32 @@ public static class AddAsset
                 continue;
             }
 
-            return input;
+            return price;
+        }
+    }
+    
+    private static decimal ConvertCurrencyToUsd(decimal localPrice, string officeName)
+    {
+        while (true)
+        {
+            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
+                string.Equals(office.Name, officeName, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedOffice is null)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Office not found, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            decimal exchangeRate = selectedOffice.exchangeRate;
+            decimal priceUsd = exchangeRate * localPrice;
+
+            Console.WriteLine(priceUsd);
+            Console.WriteLine(localPrice);
+
+            return priceUsd;
         }
     }
 }
