@@ -12,14 +12,10 @@ public static class AddAsset
             Console.WriteLine("===== Add Asset =====");
 
             var assetType = PromptForValidAssetType("Asset Type");
-
             var brand = PromptRequired("Brand");
             var model = PromptRequired("Model");
-
-            //Check that office matches available offices
             var office = PromptForValidOffice("Office");
-
-            var price = PromptRequired("Price");
+            var price = PromptForValidDecimal("Price");
             //Validate to decimal
             //Convert from local currency to USD
 
@@ -80,7 +76,6 @@ public static class AddAsset
                 continue;
             }
 
-            ;
             return input;
         }
     }
@@ -107,7 +102,32 @@ public static class AddAsset
                 continue;
             }
 
-            ;
+            return input;
+        }
+    }
+
+    private static string PromptForValidDecimal(string label)
+    {
+        while (true)
+        {
+            string input = PromptRequired(label);
+            bool isDecimal = decimal.TryParse(input, out decimal price);
+            if (!isDecimal)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"Only numbers allowed, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
+            if (price < 0)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"Only positive values allowed, try again.");
+                Console.ResetColor();
+                continue;
+            }
+
             return input;
         }
     }
