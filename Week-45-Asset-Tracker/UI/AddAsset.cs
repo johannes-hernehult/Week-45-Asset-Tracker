@@ -111,6 +111,7 @@ public static class AddAsset
         while (true)
         {
             string input = PromptRequired(label);
+            input = input.Replace(',', '.');
             bool isDecimal = decimal.TryParse(input, out decimal price);
             if (!isDecimal)
             {
