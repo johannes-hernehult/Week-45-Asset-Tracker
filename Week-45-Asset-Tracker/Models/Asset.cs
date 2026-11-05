@@ -6,12 +6,12 @@ public static class AssetTypes
     public const string MobilePhone = "Mobile Phone";
     public const string Tablet = "Tablet";
 
-    public static readonly string[] All =
+    public static IReadOnlyList<string> All { get; } = Array.AsReadOnly(
     [
         Computer,
         MobilePhone,
         Tablet
-    ];
+    ]);
 }
 
 public abstract class Asset(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
@@ -25,19 +25,19 @@ public abstract class Asset(string brand, string model, DateOnly purchaseDate, d
     public abstract string AssetType { get; }
 }
 
-public class Computer(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
+public sealed class Computer(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
     public override string AssetType => AssetTypes.Computer;
 }
 
-public class MobilePhone(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
+public sealed class MobilePhone(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
     public override string AssetType => AssetTypes.MobilePhone;
 }
 
-public class Tablet(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
+public sealed class Tablet(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
     : Asset(brand, model, purchaseDate, priceUsd, office)
 {
     public override string AssetType => AssetTypes.Tablet;
