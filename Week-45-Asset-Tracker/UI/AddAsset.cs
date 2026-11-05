@@ -8,43 +8,57 @@ public static class AddAsset
 {
     public static void Run(AssetService assetService)
     {
-        while (true)
+        try
         {
-            Console.Clear();
-            Console.WriteLine("===== Add Asset =====");
-
-            var assetType = PromptForValidAssetType("Asset Type");
-            var brand = PromptRequired("Brand");
-            var model = PromptRequired("Model");
-            var office = PromptForValidOffice("Office");
-            var priceLocal = PromptForValidDecimal("Price", office);
-            var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
-            var purchaseDate = PromptForValidDateOnly("Purchase Date (yyyy-MM-dd)");
-
-            switch (assetType)
+            while (true)
             {
-                case AssetTypes.Computer:
-                    assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office));
-                    break;
-                case AssetTypes.MobilePhone:
-                    assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office));
-                    break;
-                case AssetTypes.Tablet:
-                    assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office));
-                    break;
-            }
-            
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("SUCCESS: Asset added!");
-            Console.ResetColor();
+                Console.Clear();
+                Console.WriteLine("===== Add Asset =====");
+                Console.WriteLine("Enter 'q' at any time to cancel.");
 
-            var input = PromptRequired("Add a new asset (y/n)? ", true);
-            if (input == "n")
-            {
-                break;
+                var assetType = PromptForValidAssetType("Asset Type");
+                var brand = PromptRequired("Brand");
+                var model = PromptRequired("Model");
+                var office = PromptForValidOffice("Office");
+                var priceLocal = PromptForValidDecimal("Price", office);
+                var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
+                var purchaseDate = PromptForValidDateOnly("Purchase Date (yyyy-MM-dd)");
+
+                switch (assetType)
+                {
+                    case AssetTypes.Computer:
+                        assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office));
+                        break;
+                    case AssetTypes.MobilePhone:
+                        assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office));
+                        break;
+                    case AssetTypes.Tablet:
+                        assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office));
+                        break;
+                }
+
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine("SUCCESS: Asset added!");
+                Console.ResetColor();
+
+                var input = PromptRequired("Add a new asset (y/n)? ", true);
+                if (input == "n")
+                {
+                    break;
+                }
             }
         }
+        catch (AddAssetCancelledException)
+        {
+            Console.ResetColor();
+            Console.WriteLine("\nAdding asset cancelled.");
+        }
     }
+
+    private sealed class AddAssetCancelledException : Exception
+    {
+    }
+
 
     private static string NormalizeInputString(string input)
     {
@@ -59,6 +73,11 @@ public static class AddAsset
             Console.Write($"{prompt}: ");
             Console.ResetColor();
             string? input = Console.ReadLine();
+
+            if (string.Equals(input?.Trim(), "q", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new AddAssetCancelledException();
+            }
 
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -76,6 +95,7 @@ public static class AddAsset
             return NormalizeInputString(input);
         }
     }
+
 
     private static string PromptForValidAssetType(string prompt)
     {
