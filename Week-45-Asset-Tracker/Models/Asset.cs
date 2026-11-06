@@ -28,10 +28,26 @@ public abstract class Asset(string brand, string model, DateOnly purchaseDate, d
 
     public static bool CheckCollision(int id) => UsedIds.Contains(id);
 
+    public int AgeInMonths
+    {
+        get
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            int months = (today.Year - PurchaseDate.Year) * 12 + today.Month - PurchaseDate.Month;
+
+            if (today.Day < PurchaseDate.Day)
+            {
+                months--;
+            }
+
+            return months;
+        }
+    }
+
     private static int GenerateUniqueId()
     {
         if (UsedIds.Count >= 90000)
-            throw new InvalidOperationException("No free asset IDs left.");
+            throw new InvalidOperationException("ERROR: No free asset IDs left.");
 
         int id;
         do

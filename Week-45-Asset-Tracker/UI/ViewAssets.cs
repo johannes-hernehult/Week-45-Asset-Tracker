@@ -28,7 +28,8 @@ public static class ViewAssets
 
             IEnumerable<Asset> sortedAssets = SortAssets(assets, sortBy, descending);
 
-            Console.WriteLine($"Current sorting: {GetSortDescription(sortBy)}");
+            Console.WriteLine(
+                $"Current sorting: {GetSortDescription(sortBy)} ({(descending ? "descending" : "ascending")})");
             Console.WriteLine($"Price display: {(showLocalCurrency ? "Local currency" : "USD")}");
             RenderTable(sortedAssets, showLocalCurrency);
 
@@ -40,9 +41,11 @@ public static class ViewAssets
             }
 
             Console.WriteLine(
-                "Sort by: [a] Asset Type  [d] Purchase Date  [o] Office  [b] Brand  [p] Price");
+                "Sort by: [a] Type  [d] Date  [o] Office  [b] Brand  [p] Price  (press again to reverse)");
             Console.WriteLine("Toggle price currency: [c]");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("Enter a choice or [q] to go back: ");
+            Console.ResetColor();
 
             char choice = char.ToLowerInvariant(Console.ReadKey(intercept: true).KeyChar);
 
@@ -54,28 +57,13 @@ public static class ViewAssets
                     showLocalCurrency = !showLocalCurrency;
                     statusMessage = null;
                     break;
-                case 'a':
-                    sortBy = 'a';
-                    statusMessage = null;
-                    break;
-                case 'd':
-                    sortBy = 'd';
-                    statusMessage = null;
-                    break;
-                case 'o':
-                    sortBy = 'o';
-                    statusMessage = null;
-                    break;
-                case 'b':
-                    sortBy = 'b';
-                    statusMessage = null;
-                    break;
-                case 'p':
-                    sortBy = 'p';
+                case 'a' or 'd' or 'o' or 'b' or 'p':
+                    descending = choice == sortBy && !descending;
+                    sortBy = choice;
                     statusMessage = null;
                     break;
                 default:
-                    statusMessage = "Invalid choice. Choose a, d, o, b, p, c, or q.";
+                    statusMessage = "ERROR: Invalid choice. Choose a, d, o, b, p, c, or q.";
                     break;
             }
         }
@@ -83,7 +71,7 @@ public static class ViewAssets
 
     private static void RenderTable(IEnumerable<Asset> assets, bool showLocalCurrency)
     {
-        const int tableWidth = 114;
+        const int tableWidth = 118;
         const string separator = " | ";
 
         RenderHeader(tableWidth, separator);
@@ -98,13 +86,23 @@ public static class ViewAssets
         string typeHeader = "Type".PadRight(12);
         string brandHeader = "Brand".PadRight(12);
         string modelHeader = "Model".PadRight(16);
-        string priceHeader = "Price".PadLeft(18);
+        string priceHeader = "Price".PadLeft(16);
         string purchaseDateHeader = "Purchase At".PadRight(12);
-        string statusHeader = "Status".PadRight(10);
+        string ageHeader = "Age".PadRight(5);
+        string statusHeader = "Status".PadRight(7);
 
         Console.WriteLine(new string('-', width));
-        Console.WriteLine(string.Join(separator, idHeader, officeHeader, typeHeader, brandHeader, modelHeader,
-            priceHeader, purchaseDateHeader, statusHeader));
+        Console.WriteLine(string.Join(
+            separator,
+            idHeader,
+            officeHeader,
+            typeHeader,
+            brandHeader,
+            modelHeader,
+            priceHeader,
+            purchaseDateHeader,
+            ageHeader,
+            statusHeader));
         Console.WriteLine(new string('-', width));
     }
 
@@ -133,12 +131,13 @@ public static class ViewAssets
             string model = (asset.Model.Length > 16
                 ? asset.Model[..13] + "..."
                 : asset.Model).PadRight(16);
-            string price = GetPriceDisplay(asset, showLocalCurrency).PadLeft(18);
+            string price = GetPriceDisplay(asset, showLocalCurrency).PadLeft(16);
             string purchaseDate = asset.PurchaseDate
                 .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                 .PadRight(12);
+            string age = FormatAge(asset.AgeInMonths).PadRight(5);
             var assetStatus = GetStatus(asset);
-            string status = assetStatus.Label.PadRight(10);
+            string status = assetStatus.Label.PadRight(7);
 
             if (assetStatus.Color is { } color)
                 Console.ForegroundColor = color;
@@ -146,7 +145,17 @@ public static class ViewAssets
             if (useGrayBackground)
                 Console.Write(subtleGrayBackground);
 
-            Console.WriteLine(string.Join(separator, id, office, type, brand, model, price, purchaseDate, status));
+            Console.WriteLine(string.Join(
+                separator,
+                id,
+                office,
+                type,
+                brand,
+                model,
+                price,
+                purchaseDate,
+                age,
+                status));
             Console.Write(resetAnsiColors);
             Console.ResetColor();
             rowIndex++;
@@ -164,11 +173,11 @@ public static class ViewAssets
             string.Equals(office.Name, asset.Office, StringComparison.OrdinalIgnoreCase));
 
         if (office is null)
-            throw new InvalidOperationException($"No office configuration found for '{asset.Office}'.");
+            throw new InvalidOperationException($"ERROR: No office configuration found for '{asset.Office}'.");
 
         if (office.exchangeRate <= 0)
             throw new InvalidOperationException(
-                $"The exchange rate for '{office.CurrencyCode}' must be greater than zero.");
+                $"ERROR: The exchange rate for '{office.CurrencyCode}' must be greater than zero.");
 
         decimal localPrice = asset.PriceUsd / office.exchangeRate;
 
@@ -193,11 +202,11 @@ public static class ViewAssets
     {
         return sortBy switch
         {
-            'd' => "Purchase Date (oldest first)",
-            'o' => "Office (A-Z)",
-            'b' => "Brand (A-Z)",
-            'p' => "Price (lowest first)",
-            _ => "Asset Type (A-Z)"
+            'd' => "Purchase Date",
+            'o' => "Office, then Purchase Date",
+            'b' => "Brand, then Model",
+            'p' => "Price",
+            _ => "Asset Type, then Purchase Date"
         };
     }
 
@@ -223,5 +232,11 @@ public static class ViewAssets
         };
 
         return descending ? sorted.Reverse() : sorted;
+    }
+
+    private static string FormatAge(int totalMonths)
+    {
+        int months = Math.Max(0, totalMonths);
+        return $"{months / 12}y{months % 12}m";
     }
 }

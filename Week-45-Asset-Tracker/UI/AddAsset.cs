@@ -40,9 +40,14 @@ public static class AddAsset
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("SUCCESS: Asset added!");
                 Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.DarkGray;
 
-                var input = PromptRequired("Add a new asset (y/n)?", true);
-                if (string.Equals(input, "n", StringComparison.OrdinalIgnoreCase))
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("Add a new asset (y/n)?");
+                Console.ResetColor();
+                char input = char.ToLowerInvariant(
+                    Console.ReadKey(intercept: true).KeyChar);
+                if (input == 'n')
                 {
                     break;
                 }
@@ -51,7 +56,10 @@ public static class AddAsset
         catch (AddAssetCancelledException)
         {
             Console.ResetColor();
-            Console.WriteLine("\nAdding asset cancelled.");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("INFO: Adding asset cancelled. Press 'Enter' to continue...");
+            Console.ResetColor();
+            Console.ReadLine();
         }
     }
 
@@ -84,7 +92,7 @@ public static class AddAsset
                 }
 
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Input can not be empty, try again!");
+                Console.WriteLine("ERROR: Input can not be empty, try again!");
                 Console.ResetColor();
                 continue;
             }
@@ -110,7 +118,7 @@ public static class AddAsset
             if (matchingAssetType is null)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Asset type {input} not supported, try again.");
+                Console.WriteLine($"ERROR: Asset type {input} not supported, try again.");
                 Console.ResetColor();
                 continue;
             }
@@ -135,7 +143,7 @@ public static class AddAsset
             if (selectedOffice is null)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Office {input} not available, try again.");
+                Console.WriteLine($"ERROR: Office {input} not available, try again.");
                 Console.ResetColor();
                 continue;
             }
@@ -155,7 +163,7 @@ public static class AddAsset
                     CultureInfo.InvariantCulture, out decimal price))
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Only numbers allowed, try again.");
+                Console.WriteLine("ERROR: Only numbers allowed, try again.");
                 Console.ResetColor();
                 continue;
             }
@@ -163,7 +171,7 @@ public static class AddAsset
             if (price <= 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Only positive values allowed, try again.");
+                Console.WriteLine("ERROR: Only positive values allowed, try again.");
                 Console.ResetColor();
                 continue;
             }
@@ -194,7 +202,7 @@ public static class AddAsset
             if (!isValidDate)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
+                Console.WriteLine("ERROR: Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
                 Console.ResetColor();
                 continue;
             }

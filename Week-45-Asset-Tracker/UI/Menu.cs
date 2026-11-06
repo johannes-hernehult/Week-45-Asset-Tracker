@@ -26,7 +26,9 @@ public class Menu
                 Console.WriteLine($"{i + 1}. {_items[i].Label}");
 
             Console.WriteLine("0. Exit");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("Press a number to select: ");
+            Console.ResetColor();
 
             char key = Console.ReadKey(intercept: true).KeyChar;
             Console.WriteLine();
@@ -43,8 +45,10 @@ public class Menu
 
             if (choice < 1 || choice > _items.Count)
             {
-                Console.WriteLine("Invalid choice. Press any key to continue.");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ERROR: Invalid choice. Press any key to continue.");
                 Console.ReadKey(intercept: true);
+                Console.ResetColor();
                 continue;
             }
 
@@ -56,7 +60,9 @@ public class Menu
     {
         while (true)
         {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("Are you sure you want to exit? [y/n] ");
+            Console.ResetColor();
             char confirmation = char.ToLowerInvariant(
                 Console.ReadKey(intercept: true).KeyChar);
             Console.WriteLine();
