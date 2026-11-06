@@ -25,13 +25,21 @@ public enum AssetStatus
     Red // less than 3 months left
 }
 
-public abstract class Asset(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
+// Pass an existing id when restoring an asset (e.g. loading from file).
+// Leave it out to get a newly generated unique id.
+public abstract class Asset(
+    string brand,
+    string model,
+    DateOnly purchaseDate,
+    decimal priceUsd,
+    string office,
+    int? id = null)
 {
     public const int LifespanYears = 3;
 
     private static readonly HashSet<int> UsedIds = [];
 
-    public int Id { get; } = GenerateUniqueId();
+    public int Id { get; } = id.HasValue ? ReserveId(id.Value) : GenerateUniqueId();
     public string Brand { get; } = brand;
     public string Model { get; } = model;
     public DateOnly PurchaseDate { get; } = purchaseDate;
@@ -75,6 +83,17 @@ public abstract class Asset(string brand, string model, DateOnly purchaseDate, d
         }
     }
 
+    private static int ReserveId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentOutOfRangeException(nameof(id), "Asset ID must be positive.");
+
+        if (!UsedIds.Add(id))
+            throw new InvalidOperationException($"ERROR: Asset ID {id} is already in use.");
+
+        return id;
+    }
+
     private static int GenerateUniqueId()
     {
         if (UsedIds.Count >= 90000)
@@ -91,20 +110,38 @@ public abstract class Asset(string brand, string model, DateOnly purchaseDate, d
     }
 }
 
-public sealed class Computer(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
-    : Asset(brand, model, purchaseDate, priceUsd, office)
+public sealed class Computer(
+    string brand,
+    string model,
+    DateOnly purchaseDate,
+    decimal priceUsd,
+    string office,
+    int? id = null)
+    : Asset(brand, model, purchaseDate, priceUsd, office, id)
 {
     public override AssetType AssetType => AssetType.Computer;
 }
 
-public sealed class MobilePhone(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
-    : Asset(brand, model, purchaseDate, priceUsd, office)
+public sealed class MobilePhone(
+    string brand,
+    string model,
+    DateOnly purchaseDate,
+    decimal priceUsd,
+    string office,
+    int? id = null)
+    : Asset(brand, model, purchaseDate, priceUsd, office, id)
 {
     public override AssetType AssetType => AssetType.MobilePhone;
 }
 
-public sealed class Tablet(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
-    : Asset(brand, model, purchaseDate, priceUsd, office)
+public sealed class Tablet(
+    string brand,
+    string model,
+    DateOnly purchaseDate,
+    decimal priceUsd,
+    string office,
+    int? id = null)
+    : Asset(brand, model, purchaseDate, priceUsd, office, id)
 {
     public override AssetType AssetType => AssetType.Tablet;
 }

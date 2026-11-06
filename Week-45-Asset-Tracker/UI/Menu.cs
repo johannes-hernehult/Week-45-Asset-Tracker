@@ -26,16 +26,14 @@ public class Menu
                 Console.WriteLine($"{i + 1}. {_items[i].Label}");
 
             Console.WriteLine("0. Exit");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("Press a number to select: ");
-            Console.ResetColor();
+            ConsoleUi.Prompt("Press a number to select: ");
 
             char key = Console.ReadKey(intercept: true).KeyChar;
             Console.WriteLine();
 
             if (key == '0')
             {
-                if (ConfirmExit())
+                if (ConsoleUi.Confirm("Are you sure you want to exit?"))
                     return;
 
                 continue;
@@ -45,35 +43,12 @@ public class Menu
 
             if (choice < 1 || choice > _items.Count)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR: Invalid choice. Press any key to continue.");
+                ConsoleUi.Error("ERROR: Invalid choice. Press any key to continue.");
                 Console.ReadKey(intercept: true);
-                Console.ResetColor();
                 continue;
             }
 
             _items[choice - 1].Execute();
-        }
-    }
-
-    private static bool ConfirmExit()
-    {
-        while (true)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("Are you sure you want to exit? [y/n] ");
-            Console.ResetColor();
-            char confirmation = char.ToLowerInvariant(
-                Console.ReadKey(intercept: true).KeyChar);
-            Console.WriteLine();
-
-            if (confirmation == 'y')
-                return true;
-
-            if (confirmation == 'n')
-                return false;
-
-            Console.WriteLine("Please press Y or N.");
         }
     }
 }

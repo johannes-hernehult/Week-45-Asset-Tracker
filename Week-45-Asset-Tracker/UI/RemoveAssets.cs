@@ -23,21 +23,17 @@ public static class RemoveAsset
                 return;
             }
 
-            ViewAssets.RenderTable(
+            AssetTable.Render(
                 assets.OrderBy(asset => asset.AssetType).ThenBy(asset => asset.PurchaseDate),
                 showLocalCurrency: false);
 
             if (message is { } current)
             {
-                Console.ForegroundColor = current.Color;
-                Console.WriteLine(current.Text);
-                Console.ResetColor();
+                ConsoleUi.WriteLine(current.Text, current.Color);
                 message = null;
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("Enter the ID of the asset to remove or [q] to go back: ");
-            Console.ResetColor();
+            ConsoleUi.Prompt("Enter the ID of the asset to remove or [q] to go back: ");
 
             string input = Console.ReadLine()?.Trim() ?? string.Empty;
 
@@ -60,7 +56,7 @@ public static class RemoveAsset
                 continue;
             }
 
-            if (!Confirm($"Remove {asset.Brand} {asset.Model} (ID {asset.Id})? [y/n] "))
+            if (!ConsoleUi.Confirm($"Remove {asset.Brand} {asset.Model} (ID {asset.Id})?"))
             {
                 message = ("INFO: Removal cancelled.", ConsoleColor.Blue);
                 continue;
@@ -68,24 +64,6 @@ public static class RemoveAsset
 
             assetService.RemoveAsset(id);
             message = ($"SUCCESS: Asset {id} removed.", ConsoleColor.DarkGreen);
-        }
-    }
-
-    private static bool Confirm(string prompt)
-    {
-        while (true)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(prompt);
-            Console.ResetColor();
-            char key = char.ToLowerInvariant(Console.ReadKey(intercept: true).KeyChar);
-            Console.WriteLine();
-
-            if (key == 'y')
-                return true;
-
-            if (key == 'n')
-                return false;
         }
     }
 }

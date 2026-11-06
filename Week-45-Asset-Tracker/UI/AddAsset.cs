@@ -21,7 +21,7 @@ public static class AddAsset
                 var model = PromptRequired("Model");
                 var office = PromptForValidOffice("Office");
                 var priceLocal = PromptForValidDecimal("Price", office);
-                var priceUsd = ConvertCurrencyToUsd(priceLocal, office);
+                var priceUsd = office.ToUsd(priceLocal);
                 var purchaseDate = PromptForValidDateOnly("Purchase Date (yyyy-MM-dd)");
 
                 switch (assetType)
@@ -37,11 +37,9 @@ public static class AddAsset
                         break;
                 }
 
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("SUCCESS: Asset added!");
-                Console.ResetColor();
+                ConsoleUi.Success("SUCCESS: Asset added!");
 
-                if (!AskAddAnother())
+                if (!ConsoleUi.Confirm("Add a new asset?"))
                 {
                     break;
                 }
@@ -49,10 +47,7 @@ public static class AddAsset
         }
         catch (AddAssetCancelledException)
         {
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("INFO: Adding asset cancelled. Press 'Enter' to continue...");
-            Console.ResetColor();
+            ConsoleUi.Info("INFO: Adding asset cancelled. Press 'Enter' to continue...");
             Console.ReadLine();
         }
     }
@@ -61,34 +56,13 @@ public static class AddAsset
     {
     }
 
-    private static bool AskAddAnother()
-    {
-        while (true)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("Add a new asset (y/n)? ");
-            Console.ResetColor();
-            char input = char.ToLowerInvariant(
-                Console.ReadKey(intercept: true).KeyChar);
-            Console.WriteLine();
-
-            if (input == 'y')
-                return true;
-
-            if (input == 'n')
-                return false;
-        }
-    }
-
     private static string NormalizeInputString(string input) => input.Trim();
 
     private static string PromptRequired(string prompt, bool allowEmpty = false)
     {
         while (true)
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write($"{prompt}: ");
-            Console.ResetColor();
+            ConsoleUi.Write($"{prompt}: ", ConsoleColor.Gray);
             string? input = Console.ReadLine();
 
             if (string.Equals(input?.Trim(), "q", StringComparison.OrdinalIgnoreCase))
@@ -103,16 +77,13 @@ public static class AddAsset
                     return string.Empty;
                 }
 
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ERROR: Input can not be empty, try again!");
-                Console.ResetColor();
+                ConsoleUi.Error("ERROR: Input can not be empty, try again!");
                 continue;
             }
 
             return NormalizeInputString(input);
         }
     }
-
 
     private static AssetType PromptForValidAssetType(string prompt)
     {
@@ -121,9 +92,9 @@ public static class AddAsset
         while (true)
         {
             Console.Write("Available asset types: ");
-            Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine(string.Join(", ", assetTypes.Select(type => type.ToDisplayString())));
-            Console.ResetColor();
+            ConsoleUi.WriteLine(
+                string.Join(", ", assetTypes.Select(type => type.ToDisplayString())),
+                ConsoleColor.DarkBlue);
 
             string input = PromptRequired(prompt);
 
@@ -135,9 +106,7 @@ public static class AddAsset
                 }
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine($"ERROR: Asset type {input} not supported, try again.");
-            Console.ResetColor();
+            ConsoleUi.Error($"ERROR: Asset type {input} not supported, try again.");
         }
     }
 
@@ -146,19 +115,16 @@ public static class AddAsset
         while (true)
         {
             Console.Write("Available offices: ");
-            Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine(string.Join(", ", OfficeCatalog.All.Select(o => o.Name)));
-            Console.ResetColor();
+            ConsoleUi.WriteLine(
+                string.Join(", ", OfficeCatalog.All.Select(o => o.Name)),
+                ConsoleColor.DarkBlue);
 
             string input = PromptRequired(prompt);
-            var selectedOffice = OfficeCatalog.All.FirstOrDefault(o =>
-                string.Equals(o.Name, input, StringComparison.OrdinalIgnoreCase));
+            var selectedOffice = OfficeCatalog.Find(input);
 
             if (selectedOffice is null)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"ERROR: Office {input} not available, try again.");
-                Console.ResetColor();
+                ConsoleUi.Error($"ERROR: Office {input} not available, try again.");
                 continue;
             }
 
@@ -176,29 +142,19 @@ public static class AddAsset
             if (!decimal.TryParse(input, NumberStyles.AllowDecimalPoint,
                     CultureInfo.InvariantCulture, out decimal price))
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ERROR: Only numbers allowed, try again.");
-                Console.ResetColor();
+                ConsoleUi.Error("ERROR: Only numbers allowed, try again.");
                 continue;
             }
 
             if (price <= 0)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ERROR: Only positive values allowed, try again.");
-                Console.ResetColor();
+                ConsoleUi.Error("ERROR: Only positive values allowed, try again.");
                 continue;
             }
 
             return price;
         }
     }
-
-    private static decimal ConvertCurrencyToUsd(decimal localPrice, Office office)
-    {
-        return localPrice * office.ExchangeRate;
-    }
-
 
     private static DateOnly PromptForValidDateOnly(string prompt)
     {
@@ -215,17 +171,13 @@ public static class AddAsset
 
             if (!isValidDate)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ERROR: Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
-                Console.ResetColor();
+                ConsoleUi.Error("ERROR: Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
                 continue;
             }
 
             if (date > DateOnly.FromDateTime(DateTime.Today))
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ERROR: Purchase date can not be in the future, try again.");
-                Console.ResetColor();
+                ConsoleUi.Error("ERROR: Purchase date can not be in the future, try again.");
                 continue;
             }
 

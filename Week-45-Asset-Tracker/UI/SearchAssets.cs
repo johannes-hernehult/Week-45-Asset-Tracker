@@ -11,9 +11,7 @@ public static class SearchAssets
         {
             Console.Clear();
             Console.WriteLine("===== Search Assets =====");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("Search brand or model (empty or 'q' to go back): ");
-            Console.ResetColor();
+            ConsoleUi.Prompt("Search brand or model (empty or 'q' to go back): ");
 
             string term = Console.ReadLine()?.Trim() ?? string.Empty;
 
@@ -27,21 +25,17 @@ public static class SearchAssets
 
             if (results.Count == 0)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"No assets found for '{term}'.");
-                Console.ResetColor();
+                ConsoleUi.Error($"No assets found for '{term}'.");
             }
             else
             {
                 Console.WriteLine($"{results.Count} result(s) for '{term}':");
-                ViewAssets.RenderTable(
+                AssetTable.Render(
                     results.OrderBy(asset => asset.AssetType).ThenBy(asset => asset.PurchaseDate),
                     showLocalCurrency: false);
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("Press any key to search again...");
-            Console.ResetColor();
+            ConsoleUi.Hint("Press any key to search again...");
             Console.ReadKey(intercept: true);
         }
     }
