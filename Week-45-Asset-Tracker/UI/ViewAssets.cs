@@ -9,6 +9,7 @@ public static class ViewAssets
     public static void Run(AssetService assetService)
     {
         char sortBy = 'a';
+        bool showLocalCurrency = false;
         string? statusMessage = null;
 
         while (true)
@@ -27,7 +28,8 @@ public static class ViewAssets
             IOrderedEnumerable<Asset> sortedAssets = SortAssets(assets, sortBy);
 
             Console.WriteLine($"Current sorting: {GetSortDescription(sortBy)}");
-            RenderTable(sortedAssets);
+            Console.WriteLine($"Price display: {(showLocalCurrency ? "Local currency" : "USD")}");
+            RenderTable(sortedAssets, showLocalCurrency);
 
             if (statusMessage is not null)
             {
@@ -38,6 +40,7 @@ public static class ViewAssets
 
             Console.WriteLine(
                 "Sort by: [a] Asset Type  [d] Purchase Date  [o] Office  [b] Brand  [p] Price");
+            Console.WriteLine("Toggle price currency: [c]");
             Console.Write("Enter a choice and press Enter, or [q] to go back: ");
 
             string? choice = Console.ReadLine()?.Trim().ToLowerInvariant();
@@ -46,6 +49,10 @@ public static class ViewAssets
             {
                 case "q":
                     return;
+                case "c":
+                    showLocalCurrency = !showLocalCurrency;
+                    statusMessage = null;
+                    break;
                 case "a":
                     sortBy = 'a';
                     statusMessage = null;
@@ -67,20 +74,19 @@ public static class ViewAssets
                     statusMessage = null;
                     break;
                 default:
-                    statusMessage = "Invalid choice. Choose a, d, o, b, p, or q.";
+                    statusMessage = "Invalid choice. Choose a, d, o, b, p, c, or q.";
                     break;
             }
         }
     }
 
-    private static void RenderTable(IEnumerable<Asset> assets)
+    private static void RenderTable(IEnumerable<Asset> assets, bool showLocalCurrency)
     {
-        int tableWidth = 106;
-        string seperator = " | ";
+        const int tableWidth = 106;
+        const string separator = " | ";
 
-
-        RenderHeader(tableWidth, seperator);
-        RenderRows(seperator, assets);
+        RenderHeader(tableWidth, separator);
+        RenderRows(separator, assets, showLocalCurrency);
         Console.WriteLine(new string('-', tableWidth));
     }
 
@@ -90,7 +96,7 @@ public static class ViewAssets
         string typeHeader = "Type".PadRight(12);
         string brandHeader = "Brand".PadRight(12);
         string modelHeader = "Model".PadRight(16);
-        string priceHeader = "Price(USD)".PadLeft(12);
+        string priceHeader = "Price".PadLeft(18);
         string purchaseDateHeader = "Purchase At".PadRight(12);
         string statusHeader = "Status".PadRight(10);
 
@@ -101,7 +107,10 @@ public static class ViewAssets
     }
 
 
-    private static void RenderRows(string separator, IEnumerable<Asset> assets)
+    private static void RenderRows(
+        string separator,
+        IEnumerable<Asset> assets,
+        bool showLocalCurrency)
     {
         const string subtleGrayBackground = "\u001b[48;2;48;48;48m";
         const string resetAnsiColors = "\u001b[0m";
@@ -115,13 +124,13 @@ public static class ViewAssets
             if (useGrayBackground)
                 Console.Write(subtleGrayBackground);
 
-            string office = $"{asset.Office}".PadRight(8);
-            string type = $"{asset.AssetType}".PadRight(12);
-            string brand = $"{asset.Brand}".PadRight(12);
+            string office = asset.Office.PadRight(8);
+            string type = asset.AssetType.PadRight(12);
+            string brand = asset.Brand.PadRight(12);
             string model = (asset.Model.Length > 16
-                ? asset.Model[..13] + "..." // Truncate long Model names
+                ? asset.Model[..13] + "..."
                 : asset.Model).PadRight(16);
-            string price = $"{asset.PriceUsd:F2}".PadLeft(12);
+            string price = GetPriceDisplay(asset, showLocalCurrency).PadLeft(18);
             string purchaseDate = asset.PurchaseDate
                 .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                 .PadRight(12);
@@ -134,13 +143,35 @@ public static class ViewAssets
             if (useGrayBackground)
                 Console.Write(subtleGrayBackground);
 
-            Console.WriteLine(string.Join(separator, office, type, brand, model, price, purchaseDate, status));
+            Console.WriteLine(string.Join(
+                separator, office, type, brand, model, price, purchaseDate, status));
             Console.Write(resetAnsiColors);
             Console.ResetColor();
             rowIndex++;
         }
     }
 
+    private static string GetPriceDisplay(Asset asset, bool showLocalCurrency)
+    {
+        if (!showLocalCurrency)
+        {
+            return $"{asset.PriceUsd.ToString("N2", CultureInfo.InvariantCulture)} USD";
+        }
+
+        Office? office = OfficeCatalog.All.FirstOrDefault(office =>
+            string.Equals(office.Name, asset.Office, StringComparison.OrdinalIgnoreCase));
+
+        if (office is null)
+            throw new InvalidOperationException($"No office configuration found for '{asset.Office}'.");
+
+        if (office.exchangeRate <= 0)
+            throw new InvalidOperationException(
+                $"The exchange rate for '{office.CurrencyCode}' must be greater than zero.");
+
+        decimal localPrice = asset.PriceUsd / office.exchangeRate;
+
+        return $"{localPrice.ToString("N2", CultureInfo.InvariantCulture)} {office.CurrencyCode}";
+    }
 
     private static (string Label, ConsoleColor? Color) GetStatus(Asset asset)
     {
