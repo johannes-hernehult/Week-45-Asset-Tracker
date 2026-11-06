@@ -75,54 +75,83 @@ public static class ViewAssets
 
     private static void RenderTable(IEnumerable<Asset> assets)
     {
-        int tableWidth = 104;
+        int tableWidth = 106;
         string seperator = " | ";
 
 
         RenderHeader(tableWidth, seperator);
-
-        foreach (var asset in assets)
-        {
-            (string Label, ConsoleColor? Color) status = GetStatus(asset);
-
-            if (status.Color is { } color) Console.ForegroundColor = color;
-
-
-            Console.ResetColor();
-        }
+        RenderRows(seperator, assets);
+        Console.WriteLine(new string('-', tableWidth));
     }
 
     private static void RenderHeader(int width, string separator)
     {
-        string officeHeader = "Office".PadRight(10);
+        string officeHeader = "Office".PadRight(8);
         string typeHeader = "Type".PadRight(12);
         string brandHeader = "Brand".PadRight(12);
-        string modelHeader = "Model".PadRight(14);
-        string priceHeader = "Price".PadLeft(12);
-        string purchaseDateHeader = "Purchase At".PadRight(10);
-        string statusHeader = "Status".PadRight(15);
+        string modelHeader = "Model".PadRight(16);
+        string priceHeader = "Price(USD)".PadLeft(12);
+        string purchaseDateHeader = "Purchase At".PadRight(12);
+        string statusHeader = "Status".PadRight(10);
 
         Console.WriteLine(new string('-', width));
         Console.WriteLine(string.Join(separator, officeHeader, typeHeader, brandHeader, modelHeader,
             priceHeader, purchaseDateHeader, statusHeader));
         Console.WriteLine(new string('-', width));
     }
-    
-    
+
+
+    private static void RenderRows(string separator, IEnumerable<Asset> assets)
+    {
+        const string subtleGrayBackground = "\u001b[48;2;48;48;48m";
+        const string resetAnsiColors = "\u001b[0m";
+        int rowIndex = 0;
+
+        foreach (var asset in assets)
+        {
+            Console.ResetColor();
+            bool useGrayBackground = rowIndex % 2 == 0;
+
+            if (useGrayBackground)
+                Console.Write(subtleGrayBackground);
+
+            string office = $"{asset.Office}".PadRight(8);
+            string type = $"{asset.AssetType}".PadRight(12);
+            string brand = $"{asset.Brand}".PadRight(12);
+            string model = (asset.Model.Length > 16
+                ? asset.Model[..13] + "..." // Truncate long Model names
+                : asset.Model).PadRight(16);
+            string price = $"{asset.PriceUsd:F2}".PadLeft(12);
+            string purchaseDate = asset.PurchaseDate
+                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .PadRight(12);
+            var assetStatus = GetStatus(asset);
+            string status = assetStatus.Label.PadRight(10);
+
+            if (assetStatus.Color is { } color)
+                Console.ForegroundColor = color;
+
+            if (useGrayBackground)
+                Console.Write(subtleGrayBackground);
+
+            Console.WriteLine(string.Join(separator, office, type, brand, model, price, purchaseDate, status));
+            Console.Write(resetAnsiColors);
+            Console.ResetColor();
+            rowIndex++;
+        }
+    }
+
 
     private static (string Label, ConsoleColor? Color) GetStatus(Asset asset)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
         DateOnly expiryDate = asset.PurchaseDate.AddYears(3);
 
-        if (today > expiryDate)
-            return ("Expired", ConsoleColor.Red);
-
         if (today >= expiryDate.AddMonths(-3))
-            return ("< 3 Months left", ConsoleColor.DarkYellow);
+            return ("RED", ConsoleColor.Red);
 
         if (today >= expiryDate.AddMonths(-6))
-            return ("< 6 months left", ConsoleColor.Yellow);
+            return ("YELLOW", ConsoleColor.Yellow);
 
         return ("", null);
     }
