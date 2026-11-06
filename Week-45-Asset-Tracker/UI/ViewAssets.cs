@@ -41,35 +41,35 @@ public static class ViewAssets
             Console.WriteLine(
                 "Sort by: [a] Asset Type  [d] Purchase Date  [o] Office  [b] Brand  [p] Price");
             Console.WriteLine("Toggle price currency: [c]");
-            Console.Write("Enter a choice and press Enter, or [q] to go back: ");
+            Console.Write("Enter a choice or [q] to go back: ");
 
-            string? choice = Console.ReadLine()?.Trim().ToLowerInvariant();
+            char choice = char.ToLowerInvariant(Console.ReadKey(intercept: true).KeyChar);
 
             switch (choice)
             {
-                case "q":
+                case 'q':
                     return;
-                case "c":
+                case 'c':
                     showLocalCurrency = !showLocalCurrency;
                     statusMessage = null;
                     break;
-                case "a":
+                case 'a':
                     sortBy = 'a';
                     statusMessage = null;
                     break;
-                case "d":
+                case 'd':
                     sortBy = 'd';
                     statusMessage = null;
                     break;
-                case "o":
+                case 'o':
                     sortBy = 'o';
                     statusMessage = null;
                     break;
-                case "b":
+                case 'b':
                     sortBy = 'b';
                     statusMessage = null;
                     break;
-                case "p":
+                case 'p':
                     sortBy = 'p';
                     statusMessage = null;
                     break;
