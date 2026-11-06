@@ -92,5 +92,27 @@ Week-45-Asset-Tracker/
 
 ## Screenshots
 
-```````
-```````
+### Main menu
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/b1640d90-55e1-4ebf-b951-22f43644424a" />
+
+### Add Asset Success
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/e9b80081-e174-4091-b637-27e393838c7c" />
+
+### Add Asset Error
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/dcd12cd2-34ff-4295-b16c-645efa0b9e5f" />
+
+### View Assets Default View
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/7d9eba06-9679-43f2-b558-627c3db566a8" />
+
+### View Assets Sorted by Date & Local currency displaied
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/b753bc14-3a94-45f1-92d8-aba398804f2f" />
+
+### Search Results 'apple'
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/a9d25efb-8a0d-4bbe-bb3d-1e2ae6ef9a2a" />
+
+### Remove Asset Success
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/12f7f158-4f77-4da3-aa3b-a6128f6d93c7" />
+
+### Remove Asset Failure
+<img width="1234" height="839" alt="image" src="https://github.com/user-attachments/assets/e2907e45-37d8-422e-88bb-affc388a33ed" />
+
