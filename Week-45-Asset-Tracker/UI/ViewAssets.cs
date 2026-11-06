@@ -9,6 +9,7 @@ public static class ViewAssets
     public static void Run(AssetService assetService)
     {
         char sortBy = 'a';
+        bool descending = false;
         bool showLocalCurrency = false;
         string? statusMessage = null;
 
@@ -25,7 +26,7 @@ public static class ViewAssets
                 break;
             }
 
-            IOrderedEnumerable<Asset> sortedAssets = SortAssets(assets, sortBy);
+            IEnumerable<Asset> sortedAssets = SortAssets(assets, sortBy, descending);
 
             Console.WriteLine($"Current sorting: {GetSortDescription(sortBy)}");
             Console.WriteLine($"Price display: {(showLocalCurrency ? "Local currency" : "USD")}");
@@ -200,25 +201,27 @@ public static class ViewAssets
         };
     }
 
-    private static IOrderedEnumerable<Asset> SortAssets(List<Asset> assets, char sortBy)
+    private static IEnumerable<Asset> SortAssets(List<Asset> assets, char sortBy, bool descending)
     {
-        return sortBy switch
+        IOrderedEnumerable<Asset> sorted = sortBy switch
         {
             'd' => assets
                 .OrderBy(asset => asset.PurchaseDate)
                 .ThenBy(asset => asset.Id),
             'o' => assets
                 .OrderBy(asset => asset.Office, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(asset => asset.Id),
+                .ThenBy(asset => asset.PurchaseDate),
             'b' => assets
                 .OrderBy(asset => asset.Brand, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(asset => asset.Id),
+                .ThenBy(asset => asset.Model, StringComparer.OrdinalIgnoreCase),
             'p' => assets
                 .OrderBy(asset => asset.PriceUsd)
                 .ThenBy(asset => asset.Id),
             _ => assets
                 .OrderBy(asset => asset.AssetType, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(asset => asset.Id)
+                .ThenBy(asset => asset.PurchaseDate)
         };
+
+        return descending ? sorted.Reverse() : sorted;
     }
 }
