@@ -16,13 +16,32 @@ public static class AssetTypes
 
 public abstract class Asset(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
 {
-    public int Id { get; } = Random.Shared.Next(10000, 100000);
+    private static readonly HashSet<int> UsedIds = [];
+
+    public int Id { get; } = GenerateUniqueId();
     public string Brand { get; } = brand;
     public string Model { get; } = model;
     public DateOnly PurchaseDate { get; } = purchaseDate;
     public decimal PriceUsd { get; } = priceUsd;
     public string Office { get; } = office;
     public abstract string AssetType { get; }
+
+    public static bool CheckCollision(int id) => UsedIds.Contains(id);
+
+    private static int GenerateUniqueId()
+    {
+        if (UsedIds.Count >= 90000)
+            throw new InvalidOperationException("No free asset IDs left.");
+
+        int id;
+        do
+        {
+            id = Random.Shared.Next(10000, 100000);
+        } while (CheckCollision(id));
+
+        UsedIds.Add(id);
+        return id;
+    }
 }
 
 public sealed class Computer(string brand, string model, DateOnly purchaseDate, decimal priceUsd, string office)
