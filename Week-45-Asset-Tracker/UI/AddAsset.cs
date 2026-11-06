@@ -26,13 +26,13 @@ public static class AddAsset
 
                 switch (assetType)
                 {
-                    case AssetTypes.Computer:
+                    case AssetType.Computer:
                         assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
-                    case AssetTypes.MobilePhone:
+                    case AssetType.MobilePhone:
                         assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
-                    case AssetTypes.Tablet:
+                    case AssetType.Tablet:
                         assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
                 }
@@ -40,14 +40,8 @@ public static class AddAsset
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("SUCCESS: Asset added!");
                 Console.ResetColor();
-                Console.ForegroundColor = ConsoleColor.DarkGray;
 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("Add a new asset (y/n)?");
-                Console.ResetColor();
-                char input = char.ToLowerInvariant(
-                    Console.ReadKey(intercept: true).KeyChar);
-                if (input == 'n')
+                if (!AskAddAnother())
                 {
                     break;
                 }
@@ -67,6 +61,24 @@ public static class AddAsset
     {
     }
 
+    private static bool AskAddAnother()
+    {
+        while (true)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write("Add a new asset (y/n)? ");
+            Console.ResetColor();
+            char input = char.ToLowerInvariant(
+                Console.ReadKey(intercept: true).KeyChar);
+            Console.WriteLine();
+
+            if (input == 'y')
+                return true;
+
+            if (input == 'n')
+                return false;
+        }
+    }
 
     private static string NormalizeInputString(string input) => input.Trim();
 
@@ -102,28 +114,30 @@ public static class AddAsset
     }
 
 
-    private static string PromptForValidAssetType(string prompt)
+    private static AssetType PromptForValidAssetType(string prompt)
     {
+        var assetTypes = Enum.GetValues<AssetType>();
+
         while (true)
         {
             Console.Write("Available asset types: ");
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine($"{string.Join(", ", AssetTypes.All)}");
+            Console.WriteLine(string.Join(", ", assetTypes.Select(type => type.ToDisplayString())));
             Console.ResetColor();
 
             string input = PromptRequired(prompt);
-            string? matchingAssetType = AssetTypes.All.FirstOrDefault(type =>
-                string.Equals(type, input, StringComparison.OrdinalIgnoreCase));
 
-            if (matchingAssetType is null)
+            foreach (var type in assetTypes)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"ERROR: Asset type {input} not supported, try again.");
-                Console.ResetColor();
-                continue;
+                if (string.Equals(type.ToDisplayString(), input, StringComparison.OrdinalIgnoreCase))
+                {
+                    return type;
+                }
             }
 
-            return matchingAssetType;
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine($"ERROR: Asset type {input} not supported, try again.");
+            Console.ResetColor();
         }
     }
 
@@ -182,7 +196,7 @@ public static class AddAsset
 
     private static decimal ConvertCurrencyToUsd(decimal localPrice, Office office)
     {
-        return localPrice * office.exchangeRate;
+        return localPrice * office.ExchangeRate;
     }
 
 
@@ -203,6 +217,14 @@ public static class AddAsset
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine("ERROR: Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
+                Console.ResetColor();
+                continue;
+            }
+
+            if (date > DateOnly.FromDateTime(DateTime.Today))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("ERROR: Purchase date can not be in the future, try again.");
                 Console.ResetColor();
                 continue;
             }

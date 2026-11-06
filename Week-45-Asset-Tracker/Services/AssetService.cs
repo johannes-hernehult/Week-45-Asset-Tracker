@@ -11,9 +11,9 @@ public class AssetService
         _assets.Add(asset);
     }
 
-    public List<Asset> GetAssets()
+    public IReadOnlyList<Asset> GetAssets()
     {
-        return _assets;
+        return _assets.AsReadOnly();
     }
 
     public void RemoveAsset(int id)
@@ -23,8 +23,15 @@ public class AssetService
 
     public List<Asset> SearchAssets(string searchTerm)
     {
-        //To be done
-        return _assets;
-    }
+        string term = searchTerm.Trim();
 
+        if (term.Length == 0)
+            return [.. _assets];
+
+        return _assets
+            .Where(asset =>
+                asset.Brand.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                asset.Model.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
 }

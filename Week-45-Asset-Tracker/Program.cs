@@ -6,11 +6,11 @@ using Week_45_Asset_Tracker.UI;
 AssetService assetService = new AssetService();
 SeedTestData(assetService);
 
-Console.WriteLine("======= Asset Tracker =======");
-
 var mainMenu = new Menu("Asset Tracker 5000")
     .Add("Add Asset", () => AddAsset.Run(assetService))
-    .Add("View Asset", () => ViewAssets.Run(assetService));
+    .Add("View Assets", () => ViewAssets.Run(assetService))
+    .Add("Search Assets", () => SearchAssets.Run(assetService))
+    .Add("Remove Asset", () => RemoveAsset.Run(assetService));
 mainMenu.Show();
 
 static void SeedTestData(AssetService assetService)

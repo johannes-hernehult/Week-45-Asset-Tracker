@@ -1,6 +1,6 @@
 namespace Week_45_Asset_Tracker.Models;
 
-public sealed record Office(string Name, string CurrencyCode, decimal exchangeRate);
+public sealed record Office(string Name, string CurrencyCode, decimal ExchangeRate);
 
 public static class OfficeCatalog
 {

@@ -17,7 +17,7 @@ public static class ViewAssets
         {
             Console.Clear();
 
-            List<Asset> assets = assetService.GetAssets();
+            IReadOnlyList<Asset> assets = assetService.GetAssets();
 
             if (assets.Count == 0)
             {
@@ -69,9 +69,9 @@ public static class ViewAssets
         }
     }
 
-    private static void RenderTable(IEnumerable<Asset> assets, bool showLocalCurrency)
+    public static void RenderTable(IEnumerable<Asset> assets, bool showLocalCurrency)
     {
-        const int tableWidth = 118;
+        const int tableWidth = 117;
         const string separator = " | ";
 
         RenderHeader(tableWidth, separator);
@@ -126,7 +126,7 @@ public static class ViewAssets
 
             string id = asset.Id.ToString().PadRight(5);
             string office = asset.Office.PadRight(8);
-            string type = asset.AssetType.PadRight(12);
+            string type = asset.AssetType.ToDisplayString().PadRight(12);
             string brand = asset.Brand.PadRight(12);
             string model = (asset.Model.Length > 16
                 ? asset.Model[..13] + "..."
@@ -175,27 +175,26 @@ public static class ViewAssets
         if (office is null)
             throw new InvalidOperationException($"ERROR: No office configuration found for '{asset.Office}'.");
 
-        if (office.exchangeRate <= 0)
+        if (office.ExchangeRate <= 0)
             throw new InvalidOperationException(
                 $"ERROR: The exchange rate for '{office.CurrencyCode}' must be greater than zero.");
 
-        decimal localPrice = asset.PriceUsd / office.exchangeRate;
+        decimal localPrice = asset.PriceUsd / office.ExchangeRate;
 
         return $"{localPrice.ToString("N2", CultureInfo.InvariantCulture)} {office.CurrencyCode}";
     }
 
     private static (string Label, ConsoleColor? Color) GetStatus(Asset asset)
     {
-        DateOnly today = DateOnly.FromDateTime(DateTime.Today);
-        DateOnly expiryDate = asset.PurchaseDate.AddYears(3);
-
-        if (today >= expiryDate.AddMonths(-3))
-            return ("RED", ConsoleColor.Red);
-
-        if (today >= expiryDate.AddMonths(-6))
-            return ("YELLOW", ConsoleColor.Yellow);
-
-        return ("", null);
+        switch (asset.Status)
+        {
+            case AssetStatus.Red:
+                return ("RED", ConsoleColor.Red);
+            case AssetStatus.Yellow:
+                return ("YELLOW", ConsoleColor.Yellow);
+            default:
+                return ("", null);
+        }
     }
 
     private static string GetSortDescription(char sortBy)
@@ -210,7 +209,7 @@ public static class ViewAssets
         };
     }
 
-    private static IEnumerable<Asset> SortAssets(List<Asset> assets, char sortBy, bool descending)
+    private static IEnumerable<Asset> SortAssets(IEnumerable<Asset> assets, char sortBy, bool descending)
     {
         IOrderedEnumerable<Asset> sorted = sortBy switch
         {
@@ -227,7 +226,7 @@ public static class ViewAssets
                 .OrderBy(asset => asset.PriceUsd)
                 .ThenBy(asset => asset.Id),
             _ => assets
-                .OrderBy(asset => asset.AssetType, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(asset => asset.AssetType)
                 .ThenBy(asset => asset.PurchaseDate)
         };
 
