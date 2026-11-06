@@ -75,18 +75,40 @@ public static class ViewAssets
 
     private static void RenderTable(IEnumerable<Asset> assets)
     {
+        int tableWidth = 104;
+        string seperator = " | ";
+
+
+        RenderHeader(tableWidth, seperator);
+
         foreach (var asset in assets)
         {
             (string Label, ConsoleColor? Color) status = GetStatus(asset);
 
             if (status.Color is { } color) Console.ForegroundColor = color;
 
-            Console.WriteLine(
-                $"Type: {asset.AssetType} - Office: {asset.Office} - Brand: {asset.Brand} - Price(USD): {asset.PriceUsd} - {status.Label}");
 
             Console.ResetColor();
         }
     }
+
+    private static void RenderHeader(int width, string separator)
+    {
+        string officeHeader = "Office".PadRight(10);
+        string typeHeader = "Type".PadRight(12);
+        string brandHeader = "Brand".PadRight(12);
+        string modelHeader = "Model".PadRight(14);
+        string priceHeader = "Price".PadLeft(12);
+        string purchaseDateHeader = "Purchase At".PadRight(10);
+        string statusHeader = "Status".PadRight(15);
+
+        Console.WriteLine(new string('-', width));
+        Console.WriteLine(string.Join(separator, officeHeader, typeHeader, brandHeader, modelHeader,
+            priceHeader, purchaseDateHeader, statusHeader));
+        Console.WriteLine(new string('-', width));
+    }
+    
+    
 
     private static (string Label, ConsoleColor? Color) GetStatus(Asset asset)
     {
