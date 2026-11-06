@@ -4,10 +4,6 @@ A C# console application for tracking company assets (computers, mobile phones a
 
 Built as part of the Week 45 mini project (Asset Tracking System).
 
-## Branches
-- Master: My version with AI assisted development.
-- Dev: Claud refactor of my finished version (definitley more polished)
-
 ## Features
 
 - **Add assets** with input validation (type, brand, model, office, price, purchase date). Enter `q` at any prompt to cancel.
