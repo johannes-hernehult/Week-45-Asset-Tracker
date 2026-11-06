@@ -82,7 +82,7 @@ public static class ViewAssets
 
     private static void RenderTable(IEnumerable<Asset> assets, bool showLocalCurrency)
     {
-        const int tableWidth = 106;
+        const int tableWidth = 114;
         const string separator = " | ";
 
         RenderHeader(tableWidth, separator);
@@ -92,6 +92,7 @@ public static class ViewAssets
 
     private static void RenderHeader(int width, string separator)
     {
+        string idHeader = "ID".PadRight(5);
         string officeHeader = "Office".PadRight(8);
         string typeHeader = "Type".PadRight(12);
         string brandHeader = "Brand".PadRight(12);
@@ -101,7 +102,7 @@ public static class ViewAssets
         string statusHeader = "Status".PadRight(10);
 
         Console.WriteLine(new string('-', width));
-        Console.WriteLine(string.Join(separator, officeHeader, typeHeader, brandHeader, modelHeader,
+        Console.WriteLine(string.Join(separator, idHeader, officeHeader, typeHeader, brandHeader, modelHeader,
             priceHeader, purchaseDateHeader, statusHeader));
         Console.WriteLine(new string('-', width));
     }
@@ -124,6 +125,7 @@ public static class ViewAssets
             if (useGrayBackground)
                 Console.Write(subtleGrayBackground);
 
+            string id = asset.Id.ToString().PadRight(5);
             string office = asset.Office.PadRight(8);
             string type = asset.AssetType.PadRight(12);
             string brand = asset.Brand.PadRight(12);
@@ -143,8 +145,7 @@ public static class ViewAssets
             if (useGrayBackground)
                 Console.Write(subtleGrayBackground);
 
-            Console.WriteLine(string.Join(
-                separator, office, type, brand, model, price, purchaseDate, status));
+            Console.WriteLine(string.Join(separator, id, office, type, brand, model, price, purchaseDate, status));
             Console.Write(resetAnsiColors);
             Console.ResetColor();
             rowIndex++;

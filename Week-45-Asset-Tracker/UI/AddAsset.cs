@@ -27,13 +27,13 @@ public static class AddAsset
                 switch (assetType)
                 {
                     case AssetTypes.Computer:
-                        assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office));
+                        assetService.AddAsset(new Computer(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
                     case AssetTypes.MobilePhone:
-                        assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office));
+                        assetService.AddAsset(new MobilePhone(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
                     case AssetTypes.Tablet:
-                        assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office));
+                        assetService.AddAsset(new Tablet(brand, model, purchaseDate, priceUsd, office.Name));
                         break;
                 }
 
@@ -41,8 +41,8 @@ public static class AddAsset
                 Console.WriteLine("SUCCESS: Asset added!");
                 Console.ResetColor();
 
-                var input = PromptRequired("Add a new asset (y/n)? ", true);
-                if (input == "n")
+                var input = PromptRequired("Add a new asset (y/n)?", true);
+                if (string.Equals(input, "n", StringComparison.OrdinalIgnoreCase))
                 {
                     break;
                 }
@@ -60,10 +60,7 @@ public static class AddAsset
     }
 
 
-    private static string NormalizeInputString(string input)
-    {
-        return input.Trim().ToLowerInvariant();
-    }
+    private static string NormalizeInputString(string input) => input.Trim();
 
     private static string PromptRequired(string prompt, bool allowEmpty = false)
     {
@@ -122,19 +119,18 @@ public static class AddAsset
         }
     }
 
-    private static string PromptForValidOffice(string prompt)
+    private static Office PromptForValidOffice(string prompt)
     {
         while (true)
         {
             Console.Write("Available offices: ");
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine(
-                $"{string.Join(", ", OfficeCatalog.All.Select(office => office.Name))}");
+            Console.WriteLine(string.Join(", ", OfficeCatalog.All.Select(o => o.Name)));
             Console.ResetColor();
 
             string input = PromptRequired(prompt);
-            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
-                string.Equals(office.Name, input, StringComparison.OrdinalIgnoreCase));
+            var selectedOffice = OfficeCatalog.All.FirstOrDefault(o =>
+                string.Equals(o.Name, input, StringComparison.OrdinalIgnoreCase));
 
             if (selectedOffice is null)
             {
@@ -144,49 +140,30 @@ public static class AddAsset
                 continue;
             }
 
-            return input;
+            return selectedOffice;
         }
     }
 
-    private static decimal PromptForValidDecimal(string prompt, string officeName)
+    private static decimal PromptForValidDecimal(string prompt, Office office)
     {
         while (true)
         {
-            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
-                string.Equals(office.Name, officeName, StringComparison.OrdinalIgnoreCase));
+            string input = PromptRequired($"{prompt} ({office.CurrencyCode})")
+                .Replace(',', '.');
 
-            if (selectedOffice is null)
+            if (!decimal.TryParse(input, NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture, out decimal price))
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Office not found, try again.");
+                Console.WriteLine("Only numbers allowed, try again.");
                 Console.ResetColor();
                 continue;
             }
 
-            string? currencyCode = selectedOffice.CurrencyCode;
-            if (string.IsNullOrWhiteSpace(currencyCode))
+            if (price <= 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Currency code is not available, try again.");
-                Console.ResetColor();
-                continue;
-            }
-
-            string input = PromptRequired(@$"{prompt} ({currencyCode})");
-            input = input.Replace(',', '.');
-            bool isDecimal = decimal.TryParse(input, out decimal price);
-            if (!isDecimal)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Only numbers allowed, try again.");
-                Console.ResetColor();
-                continue;
-            }
-
-            if (price < 0)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Only positive values allowed, try again.");
+                Console.WriteLine("Only positive values allowed, try again.");
                 Console.ResetColor();
                 continue;
             }
@@ -195,27 +172,11 @@ public static class AddAsset
         }
     }
 
-    private static decimal ConvertCurrencyToUsd(decimal localPrice, string officeName)
+    private static decimal ConvertCurrencyToUsd(decimal localPrice, Office office)
     {
-        while (true)
-        {
-            var selectedOffice = OfficeCatalog.All.FirstOrDefault(office =>
-                string.Equals(office.Name, officeName, StringComparison.OrdinalIgnoreCase));
-
-            if (selectedOffice is null)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Office not found, try again.");
-                Console.ResetColor();
-                continue;
-            }
-
-            decimal exchangeRate = selectedOffice.exchangeRate;
-            decimal priceUsd = exchangeRate * localPrice;
-
-            return priceUsd;
-        }
+        return localPrice * office.exchangeRate;
     }
+
 
     private static DateOnly PromptForValidDateOnly(string prompt)
     {
@@ -235,6 +196,7 @@ public static class AddAsset
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine("Enter a valid date in YYYY-MM-DD format, e.g. 2026-11-05.");
                 Console.ResetColor();
+                continue;
             }
 
             return date;

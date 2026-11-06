@@ -8,11 +8,9 @@ SeedTestData(assetService);
 
 Console.WriteLine("======= Asset Tracker =======");
 
-var mainMenu = new Menu("Main menu")
+var mainMenu = new Menu("Asset Tracker 5000")
     .Add("Add Asset", () => AddAsset.Run(assetService))
-    .Add("View Asset", () => ViewAssets.Run(assetService))
-    .Add("Sort Asset", () => Console.WriteLine("Sorting asset..."))
-    .Add("Search Asset", () => Console.WriteLine("Searching asset..."));
+    .Add("View Asset", () => ViewAssets.Run(assetService));
 mainMenu.Show();
 
 static void SeedTestData(AssetService assetService)
