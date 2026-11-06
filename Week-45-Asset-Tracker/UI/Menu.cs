@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Week_45_Asset_Tracker.UI;
 
 public record MenuItem(string Label, Action Execute);
@@ -14,7 +12,7 @@ public class Menu
     public Menu Add(string label, Action action)
     {
         _items.Add(new MenuItem(label, action));
-        return this; // allows chaining
+        return this;
     }
 
     public void Show()
@@ -23,20 +21,53 @@ public class Menu
         {
             Console.Clear();
             Console.WriteLine($"=== {_title} ===");
+
             for (int i = 0; i < _items.Count; i++)
                 Console.WriteLine($"{i + 1}. {_items[i].Label}");
-            Console.WriteLine("0. Back/Exit");
 
-            Console.Write("> ");
-            if (!int.TryParse(Console.ReadLine(), out int choice)
-                || choice < 0 || choice > _items.Count)
+            Console.WriteLine("0. Exit");
+            Console.Write("Press a number to select: ");
+
+            char key = Console.ReadKey(intercept: true).KeyChar;
+            Console.WriteLine();
+
+            if (key == '0')
             {
-                Console.WriteLine("Invalid choice.");
+                if (ConfirmExit())
+                    return;
+
                 continue;
             }
 
-            if (choice == 0) return;
+            int choice = key - '0';
+
+            if (choice < 1 || choice > _items.Count)
+            {
+                Console.WriteLine("Invalid choice. Press any key to continue.");
+                Console.ReadKey(intercept: true);
+                continue;
+            }
+
             _items[choice - 1].Execute();
+        }
+    }
+
+    private static bool ConfirmExit()
+    {
+        while (true)
+        {
+            Console.Write("Are you sure you want to exit? [y/n] ");
+            char confirmation = char.ToLowerInvariant(
+                Console.ReadKey(intercept: true).KeyChar);
+            Console.WriteLine();
+
+            if (confirmation == 'y')
+                return true;
+
+            if (confirmation == 'n')
+                return false;
+
+            Console.WriteLine("Please press Y or N.");
         }
     }
 }
